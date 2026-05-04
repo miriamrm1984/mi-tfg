@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestión de Transporte Escolar</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="loginView" class="login-view">
+    <div class="login-card">
+      <h1>Acceso al Sistema</h1>
+      <p>Inicia sesión con tu usuario para cargar tu rol y permisos.</p>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="loginUsuario">Usuario</label>
+          <input type="text" id="loginUsuario" required placeholder="Ej: coordinador_demo">
+        </div>
+        <div class="form-group">
+          <label for="loginContrasena">Contraseña</label>
+          <input type="password" id="loginContrasena" required placeholder="Ej: Demo1234!">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+      </form>
+      <div class="demo-users">
+        <h4>Usuarios de prueba</h4>
+        <p>coordinador_demo / Demo1234!</p>
+        <p>centro_demo / Demo1234!</p>
+        <p>empresa_demo / Demo1234!</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="appShell" class="app-shell hidden">
+    <div class="navbar">
+      <div class="container">
+        <h1 class="logo">🚌 Transporte Escolar - Canarias</h1>
+        <div class="nav-links">
+          <a href="#" class="nav-link active" data-tab="inicio">Inicio</a>
+          <a href="#" class="nav-link" data-tab="solicitudes">Solicitudes</a>
+          <a href="#" class="nav-link" data-tab="historial">Historial</a>
+          <a href="#" class="nav-link" data-tab="reportes">Reportes</a>
+        </div>
+        <div class="session-box">
+          <button id="notifBtn" class="btn btn-secondary btn-small notif-btn" type="button" title="Notificaciones de cambios de estado">
+            Mensajes
+            <span id="notifBadge" class="notif-badge hidden">0</span>
+          </button>
+          <div id="notifPanel" class="notif-panel hidden">
+            <h4>Cambios de estado recientes</h4>
+            <div id="notifList" class="notif-list"></div>
+          </div>
+          <span id="rolActualInfo" class="role-pill"></span>
+          <span id="usuarioActualInfo" class="user-pill"></span>
+          <button id="logoutBtn" class="btn btn-secondary btn-small" type="button">Salir</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+    <!-- Pestaña Inicio -->
+    <section id="inicio-tab" class="tab-content active">
+      <div class="welcome-section">
+        <h2>Bienvenido al Sistema de Gestión de Transporte Escolar</h2>
+        <p>Gestiona solicitudes de transporte de forma centralizada, automatizada y conforme a RGPD/LOPD</p>
+        <p id="rolVistaMensaje" class="role-message"></p>
+        <div class="stats">
+          <div class="stat-card">
+            <h3 id="total-solicitudes">0</h3>
+            <p>Solicitudes Totales</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="pendientes">0</h3>
+            <p>Pendientes</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="en-tramite">0</h3>
+            <p>En Trámite</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="validadas">0</h3>
+            <p>Validadas</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pestaña Solicitudes -->
+    <section id="solicitudes-tab" class="tab-content">
+      <div id="createFormSection" class="form-section">
+        <h2>Nueva Solicitud de Transporte</h2>
+        <form id="solicitudForm">
+          <div id="field-tipo" class="form-group">
+            <label for="tipoSolicitud">Tipo de Solicitud*</label>
+            <select id="tipoSolicitud" required>
+              <option value="">-- Selecciona tipo de solicitud --</option>
+              <option value="2">Anexo II-A: Solicitud transporte alumnado NEE</option>
+              <option value="3">Anexo III-A: Bonos de transporte regular de viajeros</option>
+              <option value="4">Anexo III-B: Solicitud alumnado de residencias escolares</option>
+              <option value="5">Anexo IV: Autorización excepcional</option>
+              <option value="6">Anexo IX: Uso de transporte escolar para alumnado</option>
+              <option value="7">Anexo X: Modificaciones en ruta de transporte escolar</option>
+              <option value="8">Anexo XI: Cambio de paradas y/o rutas</option>
+              <option value="9">Anexo XII: Doble parada y/o ruta</option>
+            </select>
+          </div>
+
+          <div id="field-empresa" class="form-group">
+            <label for="empresa">Empresa Transportista*</label>
+            <input type="text" id="empresa" placeholder="Ej: Empresa A de Transportes" required>
+          </div>
+
+          <div id="field-centro" class="form-group">
+            <label for="centro">Centro Educativo*</label>
+            <input type="text" id="centro" placeholder="Ej: IES Canarias" required>
+          </div>
+
+          <div id="camposDinamicos" class="dynamic-fields"></div>
+
+          <div id="field-observaciones" class="form-group">
+            <label for="observaciones">Observaciones</label>
+            <textarea id="observaciones" rows="3" placeholder="Notas adicionales..."></textarea>
+          </div>
+
+          <div id="field-estado-row" class="form-row">
+            <div id="field-estado" class="form-group">
+              <label for="estado">Estado</label>
+              <select id="estado">
+                <option value="Pendiente">Pendiente</option>
+                <option value="En trámite">En trámite</option>
+                <option value="Validada">Validada</option>
+              </select>
+            </div>
+
+            <div id="field-fechaConfirmacion" class="form-group">
+              <label for="fechaConfirmacion">Fecha Confirmación</label>
+              <input type="date" id="fechaConfirmacion">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Registrar Solicitud</button>
+        </form>
+      </div>
+
+      <div id="estadoOnlySection" class="form-section hidden">
+        <h2>Panel de Estado de Tramitación</h2>
+        <form id="estadoForm">
+          <div class="form-group">
+            <label for="estadoSolicitudId">Solicitud</label>
+            <select id="estadoSolicitudId" required></select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nuevoEstado">Nuevo Estado</label>
+              <select id="nuevoEstado" required>
+                <option value="Pendiente">Pendiente</option>
+                <option value="En trámite">En trámite</option>
+                <option value="Validada">Validada</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="estadoObservaciones">Observaciones</label>
+              <input type="text" id="estadoObservaciones" placeholder="Motivo o nota breve">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Actualizar Estado</button>
+        </form>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filters-section">
+        <h3>Filtrar Solicitudes</h3>
+        <div class="filters">
+          <input type="text" id="busquedaAlumno" placeholder="Buscar por Alumno..." class="filter-input">
+          <input type="text" id="busquedaCentro" placeholder="Buscar por Centro..." class="filter-input">
+          <input type="text" id="busquedaEmpresa" placeholder="Buscar por Empresa..." class="filter-input">
+          <select id="filtroEstado" class="filter-input">
+            <option value="">Todos los estados</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="En trámite">En trámite</option>
+            <option value="Validada">Validada</option>
+          </select>
+          <button onclick="exportarCSV()" class="btn btn-secondary">📥 Exportar CSV</button>
+        </div>
+      </div>
+
+      <!-- Tabla de Solicitudes -->
+      <div class="table-section">
+        <h3>Solicitudes Registradas</h3>
+        <div class="table-responsive">
+          <table id="tablaSolicitudes">
+            <thead>
+              <tr>
+                <th><button type="button" class="sort-btn" data-sort-key="id">ID <span class="sort-indicator">↕</span></button></th>
+                <th><button type="button" class="sort-btn" data-sort-key="tipo">Tipo <span class="sort-indicator">↕</span></button></th>
+                <th><button type="button" class="sort-btn" data-sort-key="alumno">Alumno <span class="sort-indicator">↕</span></button></th>
+                <th><button type="button" class="sort-btn" data-sort-key="centro">Centro <span class="sort-indicator">↕</span></button></th>
+                <th><button type="button" class="sort-btn" data-sort-key="empresa">Empresa <span class="sort-indicator">↕</span></button></th>
+                <th><button type="button" class="sort-btn" data-sort-key="estado">Estado <span class="sort-indicator">↕</span></button></th>
+                <th><button type="button" class="sort-btn" data-sort-key="fecha_recepcion">Fecha Recepción <span class="sort-indicator">↕</span></button></th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pestaña Historial de Estados -->
+    <section id="historial-tab" class="tab-content">
+      <div class="historial-section">
+        <div class="historial-header">
+          <h2>Historial de Estados de la Solicitud</h2>
+          <button type="button" class="btn btn-secondary" onclick="volverASolicitudes()">Volver a Solicitudes</button>
+        </div>
+
+        <div id="historialMeta" class="historial-meta"></div>
+
+        <p id="historialEmpty" class="historial-empty">Selecciona una solicitud y pulsa "Ver" para consultar su trazabilidad completa.</p>
+
+        <div class="table-responsive">
+          <table id="tablaHistorial">
+            <thead>
+              <tr>
+                <th>Paso</th>
+                <th>Estado</th>
+                <th>Fecha y hora</th>
+                <th>Usuario</th>
+                <th>Origen</th>
+              </tr>
+            </thead>
+            <tbody id="tablaHistorialBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pestaña Reportes -->
+    <section id="reportes-tab" class="tab-content">
+      <div class="reports-section">
+        <h2>Reportes y Análisis</h2>
+        <div class="reports-grid">
+          <div class="report-card">
+            <h3>Estado de Solicitudes</h3>
+            <canvas id="cantidadChart"></canvas>
+          </div>
+          <div class="report-card">
+            <h3>Por Centro Educativo</h3>
+            <div id="centrosReport"></div>
+          </div>
+          <div class="report-card">
+            <h3>Por Empresa Transportista</h3>
+            <div id="empresasReport"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    </div>
+
+  <!-- Modal para editar solicitud -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Editar Solicitud</h2>
+      <form id="editForm">
+        <input type="hidden" id="editId">
+        <div id="edit-field-tipo" class="form-group">
+          <label for="editTipo">Tipo</label>
+          <select id="editTipo"></select>
+        </div>
+        <div id="edit-field-alumno" class="form-group">
+          <label for="editAlumno">Alumno</label>
+          <input type="text" id="editAlumno">
+        </div>
+        <div id="edit-field-centro" class="form-group">
+          <label for="editCentro">Centro</label>
+          <input type="text" id="editCentro">
+        </div>
+        <div id="edit-field-empresa" class="form-group">
+          <label for="editEmpresa">Empresa</label>
+          <input type="text" id="editEmpresa">
+        </div>
+        <div id="edit-field-estado" class="form-group">
+          <label for="editEstado">Estado</label>
+          <select id="editEstado">
+            <option value="Pendiente">Pendiente</option>
+            <option value="En trámite">En trámite</option>
+            <option value="Validada">Validada</option>
+          </select>
+        </div>
+        <div id="edit-field-observaciones" class="form-group">
+          <label for="editObservaciones">Observaciones</label>
+          <textarea id="editObservaciones" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Sistema de Gestión de Transporte Escolar - Canarias | Cumplimiento RGPD/LOPD</p>
+  </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

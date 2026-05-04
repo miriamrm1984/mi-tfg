@@ -1,0 +1,29 @@
+{
+  "name": "bus-escolar-app",
+  "version": "1.0.0",
+  "description": "Sistema de gestión de solicitudes de transporte escolar para Canarias",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "init-db": "node backend/init-database.js"
+  },
+  "keywords": [
+    "transporte escolar",
+    "solicitudes",
+    "Canarias"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

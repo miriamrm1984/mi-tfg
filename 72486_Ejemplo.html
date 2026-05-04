@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Solicitudes de Transporte Escolar</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    form, .filters {
+      background-color: #ffffff;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #3498db;
+      color: white;
+    }
+
+    td[contenteditable] {
+      background-color: #fefefe;
+      cursor: text;
+    }
+
+    .row-divider {
+      border-top: 2px solid #3498db;
+      margin: 20px 0;
+    }
+
+    .filters input {
+      width: 48%;
+      display: inline-block;
+      margin-right: 4%;
+    }
+
+    .filters button {
+      width: 48%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Solicitudes de Transporte Escolar</h1>
+
+    <form id="solicitudForm">
+      <label for="tipoSolicitud">Tipo de solicitud:</label>
+      <select id="tipoSolicitud" required>
+        <option value="">-- Selecciona --</option>
+        <option value="1">Nuevo alumno/a en transporte especial</option>
+        <option value="2">Nuevo alumno/a en residencia</option>
+        <option value="3">Nuevo alumnado Erasmus</option>
+        <option value="4">Solicitud excepcional hermanos</option>
+        <option value="5">Cambio de parada o ruta</option>
+        <option value="6">Solicitud de doble parada</option>
+        <option value="7">Creación de paradas en ruta</option>
+        <option value="8">Supresión de paradas en ruta</option>
+        <option value="9">Supresión de ruta</option>
+        <option value="10">Alta nueva ruta</option>
+        <option value="11">Otros trámites</option>
+      </select>
+
+      <div id="camposDinamicos"></div>
+
+      <label>Observaciones:</label>
+      <textarea id="observaciones"></textarea>
+
+      <label>Estado:</label>
+      <select id="estado">
+        <option value="Pendiente">Pendiente</option>
+        <option value="En trámite">En trámite</option>
+        <option value="Finalizada">Finalizada</option>
+      </select>
+
+      <label>Fecha de confirmación:</label>
+      <input type="date" id="fechaConfirmacion" />
+
+      <button type="submit">Registrar solicitud</button>
+    </form>
+
+    <div class="filters">
+      <label>Buscar por Alumno/a:</label>
+      <input type="text" id="busquedaAlumno" placeholder="Nombre del alumno/a..." oninput="filtrarTabla()" />
+
+      <label>Buscar por Centro:</label>
+      <input type="text" id="busquedaCentro" placeholder="Nombre del centro..." oninput="filtrarTabla()" />
+
+      <label for="busquedaEmpresa">Buscar por Empresa:</label>
+      <input type="text" id="busquedaEmpresa" placeholder="Buscar por Empresa" onkeyup="filtrarTabla()">
+
+      <button onclick="exportarCSV()">Exportar a CSV</button>
+    </div>
+
+    <table id="tablaSolicitudes">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Fecha recepción</th>
+          <th>Empresa</th>
+          <th>Fecha envío</th>
+          <th>Campos</th>
+          <th>Observaciones</th>
+          <th>Estado</th>
+          <th>Fecha confirmación</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const formulario = document.getElementById("solicitudForm");
+    const tipoSolicitud = document.getElementById("tipoSolicitud");
+    const camposDinamicos = document.getElementById("camposDinamicos");
+    const tabla = document.getElementById("tablaSolicitudes").querySelector("tbody");
+
+    const camposPorTipo = {
+      1: ["fechaRecepcion", "empresa", "fechaEnvio", "alumno", "direccion", "contacto", "centro", "ruta", "parada", "modPrecio", "importeSinIGIC", "importeConIGIC"],
+      2: ["fechaRecepcion", "empresa", "fechaEnvio", "alumno", "direccion", "contacto", "centro", "ruta", "parada", "modPrecio", "importeSinIGIC", "importeConIGIC"],
+      3: ["fechaRecepcion", "empresa", "fechaEnvio", "alumno", "contacto", "centro", "ruta", "parada", "periodoErasmus", "modPrecio", "importeSinIGIC", "importeConIGIC"],
+      4: ["fechaRecepcion", "empresa", "fechaEnvio", "alumno", "hermanoDe", "direccion", "contacto", "centro", "ruta", "parada", "modPrecio", "importeSinIGIC", "importeConIGIC"],
+      5: ["fechaRecepcion", "empresa", "fechaEnvio", "alumno", "direccion", "contacto", "centro", "rutaActual", "paradaActual", "rutaSolicitada", "paradaSolicitada", "modPrecio", "importeSinIGIC", "importeConIGIC"],
+      6: ["fechaRecepcion", "empresa", "fechaEnvio", "alumno", "direccion", "contacto", "centro", "ruta", "paradaActual", "dobleParadaSolicitada", "modPrecio", "importeSinIGIC", "importeConIGIC"],
+      7: ["fechaRecepcion", "empresa", "fechaEnvio", "centro", "ruta", "paradaACrear", "modPrecio", "importeSinIGIC", "importeConIGIC"],
+      8: ["fechaRecepcion", "empresa", "fechaEnvio", "centro", "ruta", "paradaASuprimir", "modPrecio", "importeSinIGIC", "importeConIGIC"],
+      9: ["fechaRecepcion", "empresa", "fechaEnvio", "centro", "rutaASuprimir", "modPrecio", "costeRuta", "fechaBaja"],
+      10: ["fechaRecepcion", "empresa", "fechaEnvio", "centro", "ruta", "paradas", "importeConIGIC", "importeSinIGIC", "fechaComienzo"],
+      11: ["fechaRecepcion", "empresa", "fechaEnvio", "centro", "ruta"]
+    };
+
+    const etiquetas = {
+      fechaRecepcion: "Fecha de recepción",
+      empresa: "Empresa",
+      fechaEnvio: "Fecha de envío",
+      alumno: "Alumno/a",
+      direccion: "Dirección",
+      contacto: "Contacto",
+      centro: "Centro",
+      ruta: "Ruta",
+      parada: "Parada",
+      modPrecio: "Modificación de precios (sí/no)",
+      importeSinIGIC: "Importe extra sin IGIC",
+      importeConIGIC: "Importe extra con IGIC",
+      periodoErasmus: "Periodo Erasmus",
+      hermanoDe: "Hermano/a de",
+      rutaActual: "Ruta actual",
+      paradaActual: "Parada actual",
+      rutaSolicitada: "Ruta solicitada",
+      paradaSolicitada: "Parada solicitada",
+      dobleParadaSolicitada: "Doble parada solicitada",
+      paradaACrear: "Parada a crear",
+      paradaASuprimir: "Parada a suprimir",
+      rutaASuprimir: "Ruta a suprimir",
+      costeRuta: "Coste de la ruta",
+      fechaBaja: "Fecha de baja",
+      paradas: "Paradas",
+      fechaComienzo: "Fecha de comienzo"
+    };
+
+    tipoSolicitud.addEventListener("change", cargarCamposDinamicos);
+
+    formulario.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const tipo = tipoSolicitud.options[tipoSolicitud.selectedIndex].text;
+      const campos = camposPorTipo[tipoSolicitud.value] || [];
+      const datos = {
+        tipo,
+        campos: {},
+        observaciones: document.getElementById("observaciones").value,
+        estado: document.getElementById("estado").value,
+        fechaConfirmacion: document.getElementById("fechaConfirmacion").value
+      };
+
+      campos.forEach(campo => {
+        datos.campos[campo] = document.getElementById(campo).value;
+      });
+
+      guardarEnTabla(datos);
+      formulario.reset();
+      camposDinamicos.innerHTML = "";
+    });
+
+    function cargarCamposDinamicos() {
+      const tipo = tipoSolicitud.value;
+      const campos = camposPorTipo[tipo] || [];
+
+      camposDinamicos.innerHTML = "";
+      campos.forEach(campo => {
+        const label = document.createElement("label");
+        label.innerText = etiquetas[campo] || campo;
+        const input = document.createElement("input");
+        input.type = campo.includes("fecha") ? "date" : "text";
+        input.id = campo;
+        camposDinamicos.appendChild(label);
+        camposDinamicos.appendChild(input);
+      });
+    }
+
+    function guardarEnTabla(datos) {
+      const fila = document.createElement("tr");
+      const campos = { ...datos.campos };
+      const fechaRecepcion = campos.fechaRecepcion || "";
+      const empresa = campos.empresa || "";
+      const fechaEnvio = campos.fechaEnvio || "";
+      delete campos.fechaRecepcion;
+      delete campos.empresa;
+      delete campos.fechaEnvio;
+
+      fila.innerHTML = `
+        <td contenteditable="true">${datos.tipo}</td>
+        <td contenteditable="true">${fechaRecepcion}</td>
+        <td contenteditable="true">${empresa}</td>
+        <td contenteditable="true">${fechaEnvio}</td>
+        <td contenteditable="true">${Object.entries(campos).map(([k, v]) => `<strong>${etiquetas[k] || k}:</strong> ${v}`).join("<br>")}</td>
+        <td contenteditable="true">${datos.observaciones}</td>
+        <td contenteditable="true">${datos.estado}</td>
+        <td contenteditable="true">${datos.fechaConfirmacion}</td>
+        <td><button class="delete-btn" onclick="eliminarFila(this)">Eliminar</button></td>
+      `;
+      tabla.appendChild(fila);
+      guardarLocalStorage();
+    }
+
+    function eliminarFila(boton) {
+      const fila = boton.parentElement.parentElement;
+      fila.remove();
+      guardarLocalStorage();
+    }
+
+    function guardarLocalStorage() {
+      const registros = [];
+      tabla.querySelectorAll("tr").forEach(fila => {
+        const celdas = fila.querySelectorAll("td");
+        registros.push({
+          tipo: celdas[0].innerText,
+          fechaRecepcion: celdas[1].innerText,
+          empresa: celdas[2].innerText,
+          fechaEnvio: celdas[3].innerText,
+          campos: celdas[4].innerHTML,
+          observaciones: celdas[5].innerText,
+          estado: celdas[6].innerText,
+          fechaConfirmacion: celdas[7].innerText
+        });
+      });
+      localStorage.setItem("solicitudes", JSON.stringify(registros));
+    }
+
+    function cargarDesdeLocalStorage() {
+      const registros = JSON.parse(localStorage.getItem("solicitudes")) || [];
+      registros.forEach(reg => {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+          <td contenteditable="true">${reg.tipo}</td>
+          <td contenteditable="true">${reg.fechaRecepcion}</td>
+          <td contenteditable="true">${reg.empresa}</td>
+          <td contenteditable="true">${reg.fechaEnvio}</td>
+          <td contenteditable="true">${reg.campos}</td>
+          <td contenteditable="true">${reg.observaciones}</td>
+          <td contenteditable="true">${reg.estado}</td>
+          <td contenteditable="true">${reg.fechaConfirmacion}</td>
+          <td><button class="delete-btn" onclick="eliminarFila(this)">Eliminar</button></td>
+        `;
+        tabla.appendChild(fila);
+      });
+    }
+
+    window.addEventListener("load", cargarDesdeLocalStorage);
+
+document.getElementById("tablaSolicitudes").addEventListener("input", () => {
+  guardarLocalStorage();
+});
+
+    function filtrarTabla() {
+  	const busquedaAlumno = document.getElementById("busquedaAlumno").value.toLowerCase();
+  	const busquedaCentro = document.getElementById("busquedaCentro").value.toLowerCase();
+  	const busquedaEmpresa = document.getElementById("busquedaEmpresa").value.toLowerCase(); // Nuevo filtro por empresa
+
+  	const filas = tabla.querySelectorAll("tr");
+     filas.forEach(fila => {
+    	const celdas = fila.querySelectorAll("td");
+    	const alumno = celdas[4]?.innerText.toLowerCase() || '';
+    	const centro = celdas[4]?.innerText.toLowerCase() || '';
+    	const empresa = celdas[2]?.innerText.toLowerCase() || ''; 
+    
+    if (
+      alumno.includes(busquedaAlumno) &&
+      centro.includes(busquedaCentro) &&
+      empresa.includes(busquedaEmpresa)
+    ) {
+      fila.style.display = "";
+    } else {
+      fila.style.display = "none";
+    }
+  });
+}
+
+    function exportarCSV() {
+  const registros = [];
+  const filas = tabla.querySelectorAll("tr");
+
+  // Recorremos las filas de la tabla (ignorando el encabezado)
+  filas.forEach(fila => {
+    const celdas = fila.querySelectorAll("td");
+    
+    if (celdas.length > 0) { // Ignoramos las filas que no tienen celdas de datos (como el encabezado)
+      // Obtenemos el contenido de cada celda y lo almacenamos en un array
+      const datosFila = Array.from(celdas).map(celda => {
+        // Escape de comillas y saltos de línea en los datos
+        let contenido = celda.innerText || celda.textContent || '';
+        contenido = contenido.replace(/"/g, '""'); // Doble comillas para escape en CSV
+        contenido = `"${contenido.replace(/\n/g, " ")}"`; // Reemplazamos saltos de línea con espacio
+        return contenido;
+      });
+
+      registros.push(datosFila.join(",")); // Unimos los valores por coma
+    }
+  });
+
+  // Unimos todas las filas por salto de línea
+  const csv = registros.join("\n");
+
+  // Creamos un enlace para descargar el archivo CSV
+  const enlace = document.createElement("a");
+  enlace.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+  enlace.target = "_blank";
+  enlace.download = "solicitudes_transporte.csv";
+  enlace.click();
+}
+  </script>
+</body>
+</html>
