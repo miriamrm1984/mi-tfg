@@ -103,7 +103,7 @@ bus-escolar/
 ### Estados de Solicitud
 - **Pendiente**: Recién creada, en espera de revisión
 - **En trámite**: En proceso de validación
-- **Finalizada**: Completada y confirmada
+- **Validada**: Completada y confirmada
 
 ---
 
