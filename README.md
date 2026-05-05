@@ -6,7 +6,7 @@ Aplicación web para **automatizar y centralizar la gestión de solicitudes de t
 
 ## ✨ Características Principales
 
- **11 Tipos de Solicitudes** predefinidas con campos dinámicos  
+ **8 Tipos de Solicitudes** predefinidas con campos dinámicos  
  **Gestión Centralizada** de todas las solicitudes  
  **Trazabilidad Completa** de registros (auditoría RGPD/LOPD)  
  **Sistema de Roles** (Centro, Coordinador, Empresa)  
