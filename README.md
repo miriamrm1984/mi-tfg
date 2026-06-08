@@ -77,17 +77,14 @@ bus-escolar/
 
 ##  Tipos de Solicitudes
 
-1. **Nuevo alumno/a en transporte especial** - Alumno con necesidades especiales
-2. **Nuevo alumno/a en residencia** - Alumno en régimen de internado
-3. **Nuevo alumnado Erasmus** - Estudiante de programa Erasmus
+1. **Solicitud de uso de transporte escolar para alumnado** -
+2. **Nuevo alumno/a en transporte especial** - Alumno con necesidades especiales
+3. **Nuevo alumno/a en residencia** - Alumno en régimen de internado
 4. **Solicitud excepcional hermanos** - Excepción por hermanos en mismo colegio
 5. **Cambio de parada o ruta** - Modificación de parada/ruta
 6. **Solicitud de doble parada** - Permiso para dos paradas
-7. **Creación de paradas en ruta** - Nueva parada en ruta existente
-8. **Supresión de paradas en ruta** - Eliminar parada de ruta
-9. **Supresión de ruta** - Eliminación completa de ruta
-10. **Alta nueva ruta** - Crear nueva ruta de transporte
-11. **Otros trámites** - Solicitudes diversas
+7. **Solicitud de modificaciones en ruta** - Modificaciones en una ruta de transporte escolar
+8. **Solicitud de bonos de transporte** - 
 
 ---
 
